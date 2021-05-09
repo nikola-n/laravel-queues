@@ -1,7 +1,9 @@
 <?php
 
+use App\User;
 use App\Jobs\ReconcileAccount;
 use Illuminate\Pipeline\Pipeline;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -32,6 +34,7 @@ Route::get('/', function () {
                 return $next($string);
             },
             function ($string, $next) {
+                //case insensitive ireplace
                 $string = str_ireplace('freaking', '', $string);
 
                 return $next($string);
@@ -48,16 +51,59 @@ Route::get('/', function () {
 });
 
 // Example 1:
-//dispatch(function () {
-//    logger('Hello there');
-//})->delay(now()->addMinutes(1));
-//return 'Finished';
+Route::get('/redis', function () {
+    dispatch(function () {
+        logger('Hello there');
+    })->delay(now()->addMinutes(2));
+    return 'Finished';
+});
+
+//Use case: user is registered, you want to send an email x time after its registered,
+//update an account for user when it signs up,
+//schedule an email after register etc.
+
+// In x-tralife we used it after the garmin api hit the endpoint to parse the data to a table
 
 // Example 2:
-//$user = App\User::first();
-//
-////dispatch(new ReconcileAccount($user));
-//
-//ReconcileAccount::dispatch($user)->onQueue('high');
-//
-//return 'Finished';
+Route::get('/account', function () {
+    $user = App\User::first();
+
+    dispatch(new ReconcileAccount($user));
+
+    //ReconcileAccount::dispatch($user)->onQueue('high');
+
+    return 'Finished';
+});
+
+Route::get('/source', function () {
+
+    $user = User::first();
+
+    ReconcileAccount::dispatch($user);
+});
+
+Auth::routes();
+
+Route::get('/home', 'HomeController@index')->name('home');
+
+
+// You must restart the queue to see the code changes: on deploy is really important to add
+//php artisan queue:restart or close it out and re-run it
+
+//queue:work runs in memory
+
+//Alternatively, you may run the queue:listen command. When using the queue:listen command,
+//you don't have to manually restart the worker when you want to reload your updated code or reset
+//the application state; however, this command is significantly less efficient than the queue:work
+// command
+
+// pa queue:failed  - lists the failed jobs
+//pa queue:retry id of the failed queue
+
+// you can specify any number of queues and then you can run any number of
+//queue workers:
+//->onQueue('high');
+
+//php artisan queue:work --queue="high,default"
+
+

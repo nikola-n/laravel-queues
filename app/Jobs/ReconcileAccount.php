@@ -4,11 +4,11 @@ namespace App\Jobs;
 
 use App\User;
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Filesystem\Filesystem;
-use Illuminate\Foundation\Bus\Dispatchable;
-use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Queue\InteractsWithQueue;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Foundation\Bus\Dispatchable;
 
 class ReconcileAccount implements ShouldQueue
 {
@@ -26,30 +26,36 @@ class ReconcileAccount implements ShouldQueue
      */
     public function __construct(User $user)
     {
-        //
         $this->user = $user;
     }
 
-    public function handle($string, $next)
-    {
-        return $next('Something Else');
-    }
     ///**
-    // * Execute the job.
-    // *
-    // * @param \Illuminate\Filesystem\Filesystem $file
-    // *
-    // * @return void
+    // * @param $string
+    // * @param $next
+    // * This is used as a pipeline, middleware
+    // * @return mixed
     // */
-    //public function handle(Filesystem $file)
+    //public function handle($string, $next)
     //{
-    //    $file->put(public_path('testing.txt'), 'Recounciling: ' . $this->user->name);
-    //
-    //    logger('Reconcile User ' . $this->user->name);
+        //return $next('Something Else');
     //}
 
-    //you can override the tags from horizon
 
+    /**
+     * Execute the job.
+     *
+     * @param \Illuminate\Filesystem\Filesystem $file
+     *
+     * @return void
+     */
+    public function handle(Filesystem $file)
+    {
+        $file->put(public_path('testing.txt'), 'Reconciling: ' . $this->user->name);
+
+        logger('Reconcile User ' . $this->user->name);
+    }
+
+    //you can override the tags from horizon
     public function tags()
     {
         return ['accounts'];
