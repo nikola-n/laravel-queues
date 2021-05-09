@@ -1,0 +1,9 @@
+For example, imagine your application is able to export a user's data to a CSV file and email it to
+them. However, creating this CSV file takes several minutes so you choose to create and mail the CSV
+within a queued job. When the CSV has been created and mailed to the user, we can use event broadcasting
+to dispatch a App\Events\UserDataExported event that is received by our application's JavaScript.
+Once the event is received, we can display a message to the user that their CSV has been emailed to
+them without them ever needing to refresh the page.
+
+Broadcasting your Laravel events allows you to share the same event names and data between your
+server-side Laravel application and your client-side JavaScript application.

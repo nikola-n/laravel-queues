@@ -86,7 +86,6 @@ Auth::routes();
 
 Route::get('/home', 'HomeController@index')->name('home');
 
-
 // You must restart the queue to see the code changes: on deploy is really important to add
 //php artisan queue:restart or close it out and re-run it
 
@@ -106,4 +105,20 @@ Route::get('/home', 'HomeController@index')->name('home');
 
 //php artisan queue:work --queue="high,default"
 
+Route::get('websockets', function () {
+    return view('home');
+});
 
+Route::get('update', function (){
+    \App\Events\OrderStatusUpdated::dispatch();
+    //This is the same with:
+    //event(new \App\Events\OrderStatusUpdated());
+});
+
+Route::get('task', function (){
+return \App\Task::latest()->pluck('body');
+});
+
+Route::post('task', function (){
+   return \App\Task::forceCreate(request('body'));
+});
