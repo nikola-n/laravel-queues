@@ -13,6 +13,13 @@ use Illuminate\Support\Facades\Broadcast;
 |
 */
 
-Broadcast::channel('App.User.{id}', function ($user, $id) {
-    return (int) $user->id === (int) $id;
+Broadcast::channel('tasks.{project}', function ($user, \App\Project $project) {
+    // this works for private channel
+    //return $project->participants->contains($user);
+
+    // for presence channel you need to return an information about the present user
+    if ($project->participants->contains($user)) {
+        return ['name' => $user->name];
+    }
+
 });

@@ -1,5 +1,6 @@
 <?php
 
+use App\Events\TaskCreated;
 use App\User;
 use App\Jobs\ReconcileAccount;
 use Illuminate\Pipeline\Pipeline;
@@ -40,7 +41,7 @@ Route::get('/', function () {
                 return $next($string);
             },
 
-            ReconcileAccount::class,
+            //ReconcileAccount::class,
         ])
         //then we dump the result in a browser
         ->then(function ($string) {
@@ -109,16 +110,42 @@ Route::get('websockets', function () {
     return view('home');
 });
 
-Route::get('update', function (){
-    \App\Events\OrderStatusUpdated::dispatch();
-    //This is the same with:
-    //event(new \App\Events\OrderStatusUpdated());
+Route::get('tasks', function () {
+    return \App\Task::latest()->pluck('body');
 });
 
-Route::get('task', function (){
-return \App\Task::latest()->pluck('body');
+Route::post('tasks', function () {
+    $task = \App\Task::forceCreate(request(['body']));
+
+    event(
+        (new TaskCreated($task))->dontBroadcastToCurrentUser()
+    );
 });
 
-Route::post('task', function (){
-   return \App\Task::forceCreate(request('body'));
+Route::get('/projects/{project}', function (\App\Project $project) {
+    $project->load('tasks');
+
+    return view('home', compact('project'));
 });
+
+// API
+
+Route::get('/api/projects/{project}', function (\App\Project $project) {
+    return $project->tasks->pluck('body');
+});
+
+Route::post('/api/projects/{project}/tasks', function (\App\Project $project) {
+    $task = $project->tasks()->create(request(['body']));
+
+    event(new TaskCreated($task));
+
+    return $task;
+});
+
+
+
+//Route::get('update', function () {
+//    \App\Events\OrderStatusUpdated::dispatch();
+//    This is the same with:
+//    event(new \App\Events\OrderStatusUpdated());
+//});
